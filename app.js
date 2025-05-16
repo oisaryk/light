@@ -1,0 +1,1 @@
+render("app", "<h1>Hello little bird!</h1>");
