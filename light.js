@@ -7,3 +7,26 @@ function render(element, content) {
         throw new Error("Element not found");
     }
 }
+
+function reactive(obj) {
+    const keys = Object.keys(obj);
+    const reactiveObj = {};
+
+    keys.forEach(key => {
+        let value = obj[key];
+
+        Object.defineProperty(reactiveObj, keys, {
+            get() {
+                console.log(`Getting ${key}: ${value}`);
+                return value;
+            },
+            set(newValue) {
+                console.log(`Setting ${key}: ${newValue}`);
+                value = newValue;
+                renderApp();
+            }
+        });
+    });
+
+    return reactiveObj;
+}
