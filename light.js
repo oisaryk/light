@@ -15,7 +15,7 @@ function reactive(obj) {
     keys.forEach(key => {
         let value = obj[key];
 
-        Object.defineProperty(reactiveObj, keys, {
+        Object.defineProperty(reactiveObj, key, {
             get() {
                 console.log(`Getting ${key}: ${value}`);
                 return value;
