@@ -20,8 +20,8 @@ const mockWeatcherData = {
     }
 }
 
-function renderApp() {
-    render("app", `
+createEffect(function() {
+    render("#app", `
         <select onchange="handleCityChange(this.value)">
             <option value="Kyiv" ${state.selectedCity === 'Kyiv' ? 'selected' : ''}>Kyiv</option>
             <option value="Lviv" ${state.selectedCity === 'Lviv' ? 'selected' : ''}>Lviv</option>
@@ -34,7 +34,7 @@ function renderApp() {
             <p>Description: ${state.weatherData.description}</p>
         </div>
     `);
-}
+});
 
 function handleCityChange(city) {
     state.selectedCity = city;
@@ -48,8 +48,6 @@ function fetchWeather(city) {
     }, 1000);
 }
 
-renderApp();
-
-// setTimeout(() => {
-//     state.selectedCity = "Lviv";
-// }, 500);
+createEffect(() => {
+    fetchWeather(state.selectedCity);
+});
