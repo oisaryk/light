@@ -26,55 +26,63 @@ function render(element, content) {
 }
 
 function reactive(obj) {
-  const keys = Object.keys(obj)
-  const reactiveObj = {}
-
-  keys.forEach((key) => {
-    let value = obj[key]
-    Object.defineProperty(reactiveObj, key, {
-      get() {
-        console.log(`Getting value, ${value}`)
-        track(reactiveObj, key)
-        return value
-      },
-      set(newValue) {
-        console.log(`Setting value, ${newValue}`)
-        if (newValue !== value) {
-          value = newValue
-          trigger(reactiveObj, key)
-        }
+  // Create a proxy handler
+  const handler = {
+    get(target, prop) {
+      // Track the property access
+      track(target, prop)
+      
+      // Get the value
+      const value = target[prop]
+      
+      // If the value is an object, make it reactive too
+      if (value && typeof value === 'object' && !Array.isArray(value)) {
+        return reactive(value)
       }
-    })
-  })
-
-    return reactiveObj
-
-  }
-
-  function track(target, key) {
-    if (currentEffect) {
-      let deps = depsMap.get(target)
-      if (!deps) {
-        deps = new Map()
-        depsMap.set(target, deps)
+      
+      return value
+    },
+    
+    set(target, prop, value) {
+      // Only trigger if the value actually changed
+      if (target[prop] !== value) {
+        target[prop] = value
+        trigger(target, prop)
       }
-      dep = deps.get(key)
-      if (!dep) {
-        dep = new Set()
-        deps.set(key, dep)
-      }
-      dep.add(currentEffect)
+      return true // Required for Proxy
     }
   }
+
+  // Create and return the proxy
+  return new Proxy(obj, handler)
+}
+
+function track(target, prop) {
+  if (currentEffect) {
+    let deps = depsMap.get(target)
+    if (!deps) {
+      deps = new Map()
+      depsMap.set(target, deps)
+    }
+    
+    let dep = deps.get(prop)
+    if (!dep) {
+      dep = new Set()
+      deps.set(prop, dep)
+    }
+    
+    dep.add(currentEffect)
+  }
+}
+
+function trigger(target, prop) {
+  const deps = depsMap.get(target)
+  if (!deps) return
   
-  function trigger(target, key) {
-   const deps = depsMap.get(target)
-    if (!deps) return;
-    const dep = deps.get(key)
-    if (dep) {
-      const effectsToRun = new Set(dep)
-      effectsToRun.forEach(effect => {
-        effect()
-      })
-    }
+  const dep = deps.get(prop)
+  if (dep) {
+    // Create a new Set to avoid infinite loops
+    const effectsToRun = new Set(dep)
+    effectsToRun.forEach(effect => effect())
   }
+}
