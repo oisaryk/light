@@ -16,7 +16,7 @@ const mockWeatcherData = {
     },
     "Odesa": {
         temperature: 25,
-        description: "Sunny"
+        description: "Meteor"
     }
 }
 
